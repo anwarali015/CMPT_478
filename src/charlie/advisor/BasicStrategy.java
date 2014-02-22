@@ -25,26 +25,29 @@ public class BasicStrategy implements IAdvisor {
         // throw new UnsupportedOperationException("Not supported yet.");
         build();
         int dhand = upCard.value();
-
+        Play advise = null;
         if (myHand.isPair()) {
             //Go to the pair array 
             int sum = getsum(myHand.getCard(0).value());
             int index = getindex(pair, sum);
-            return pair_list.get(index).get(dhand - 2);
+            advise = pair_list.get(index).get(dhand - 2);
         }else if (myHand.size()==2 && (myHand.getCard(0).getName().equals("A") || myHand.getCard(1).getName().equals("A"))){
             //Go to the ac's array
             int index = getindex(acs,myHand.getValue());
-            return acs_list.get(index).get(dhand-2);
+            advise =  acs_list.get(index).get(dhand-2);
         }else if (myHand.getValue() >= 9 && myHand.getValue() <= 17) {
             //Go to number array 
             int index = getindex(numbers, myHand.getValue());
-            return numbers_list.get(index).get(dhand - 2);
+            advise = numbers_list.get(index).get(dhand - 2);
         } else if (myHand.getValue() >= 5 && myHand.getValue() <= 8) { 
-            return Play.HIT;
+            //Always hit between 5-8 inclusive
+            advise = Play.HIT;
         } else {
-            return Play.STAY;
+            // Always Stay when 17+
+            advise = Play.STAY;
         } 
         
+        return advise;
     }
 
     private void build() {
