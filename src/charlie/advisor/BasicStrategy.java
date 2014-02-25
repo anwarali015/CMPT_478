@@ -47,16 +47,14 @@ public class BasicStrategy implements IAdvisor {
                 sum = get_sum(myHand);
                 if (sum == 12 || sum == 2) {
                     //Two possible values of an ace pair
-                    advise = ace_list.get(0).get(dhand);
+                    return ace_list.get(0).get(dhand);
                 }
-                
             } else {
-                //Not an ace so just perform the usual taskd
+                //Not an ace so just perform the usual task
                 sum = get_sum(myHand);
                 int index = get_index(pair, sum);
                 advise = pair_list.get(index).get(dhand);
             }
-
         } else if (myHand.size() == 2 && contains_ace(myHand)) {
             //Go to the ac's array
             int index = get_index(ace, myHand.getValue());
@@ -94,7 +92,7 @@ public class BasicStrategy implements IAdvisor {
     private boolean contains_ace(Hand myhand) {
         boolean found = false;
         for (int i = 0; i < myhand.size(); i++) {
-            if (myhand.getCard(0).isAce()) {
+            if (myhand.getCard(i).isAce()) {
                 found = true;
             }
         }
@@ -252,7 +250,7 @@ public class BasicStrategy implements IAdvisor {
                 temp = i;
             }
         }
-
         return temp;
     }
+     
 }
