@@ -17,7 +17,7 @@ public class BasicStrategy implements IAdvisor {
     private final int numbers[] = {17, 16, 15, 14, 13, 12, 11, 10, 9};
     ArrayList<ArrayList<Play>> numbers_list;
 
-    private final int[] ace = {21, 20, 19, 18, 17, 16, 15, 14, 13};
+    private final int[] ace = {21,18, 17, 16, 15, 14, 13};
     ArrayList<ArrayList<Play>> ace_list;
 
     private final int pair[] = {16, 20, 18, 14, 12, 10, 8, 6, 4};
@@ -34,7 +34,7 @@ public class BasicStrategy implements IAdvisor {
     public Play advise(Hand myHand, Card upCard) {
         // throw new UnsupportedOperationException("Not supported yet.");
         //Build and initilize the array.
-        build();
+        //build();
         // -2 on the dealer's upCard will give
         // exact index value in the list.
         int dhand = upCard.value() - 2;
@@ -57,6 +57,11 @@ public class BasicStrategy implements IAdvisor {
             }
         } else if (myHand.size() == 2 && contains_ace(myHand)) {
             //Go to the ac's array
+            int sum = get_sum(myHand);
+            
+            if(sum == 19 || sum ==9 || sum ==20 || sum ==10 || sum ==21 || sum ==11){
+                return ace_list.get(0).get(dhand);
+            }
             int index = get_index(ace, myHand.getValue());
             advise = ace_list.get(index).get(dhand);
         } else if (myHand.getValue() >= 9 && myHand.getValue() <= 17) {
@@ -78,6 +83,7 @@ public class BasicStrategy implements IAdvisor {
      * Builds and populates array.
      */
     private void build() {
+       
         build_numbers();
         build_acs();
         build_pair();
@@ -160,27 +166,27 @@ public class BasicStrategy implements IAdvisor {
             ace_list.add(new ArrayList<Play>());
         }
 
-        //Row 1-3 (A10-A8)
-        for (int i = 0; i < 3; i++) {
-            populate(i, 1, 10, Play.STAY, ace_list);
-        }
-        //Row 4 (A7)
-        populate(3, 1, 1, Play.STAY, ace_list);
-        populate(3, 2, 5, Play.DOUBLE_DOWN, ace_list);
-        populate(3, 6, 7, Play.STAY, ace_list);
-        populate(3, 8, 10, Play.HIT, ace_list);
-        //Row 5 (A6)
-        populate(4, 1, 1, Play.HIT, ace_list);
-        populate(4, 2, 5, Play.DOUBLE_DOWN, ace_list);
-        populate(4, 6, 10, Play.HIT, ace_list);
-        //Row 6-7 (A5) (A4)
-        for (int i = 5; i <= 6; i++) {
+        //Row 1 (A10-A8)
+         populate(0, 1, 10, Play.STAY, ace_list);
+        
+        //Row 2 (A7)
+        populate(1, 1, 1, Play.STAY, ace_list);
+        populate(1, 2, 5, Play.DOUBLE_DOWN, ace_list);
+        populate(1, 6, 7, Play.STAY, ace_list);
+        populate(1, 8, 10, Play.HIT, ace_list);
+        
+        //Row 3 (A6)
+        populate(2, 1, 1, Play.HIT, ace_list);
+        populate(2, 2, 5, Play.DOUBLE_DOWN, ace_list);
+        populate(2, 6, 10, Play.HIT, ace_list);
+        //Row 4-5 (A5), (A4)
+        for (int i = 3; i <= 4; i++) {
             populate(i, 1, 2, Play.HIT, ace_list);
             populate(i, 3, 5, Play.DOUBLE_DOWN, ace_list);
             populate(i, 6, 10, Play.HIT, ace_list);
         }
-        //Row 8-9 (A3) (A2)
-        for (int i = 7; i <= 8; i++) {
+        //Row 6-7 (A3), (A2)
+        for (int i = 5; i <= 6; i++) {
             populate(i, 1, 3, Play.HIT, ace_list);
             populate(i, 4, 5, Play.DOUBLE_DOWN, ace_list);
             populate(i, 6, 10, Play.HIT, ace_list);
@@ -251,6 +257,5 @@ public class BasicStrategy implements IAdvisor {
             }
         }
         return temp;
-    }
-     
+    }   
 }
