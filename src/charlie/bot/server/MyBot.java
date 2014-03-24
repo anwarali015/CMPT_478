@@ -63,6 +63,7 @@ public class MyBot implements Runnable, IBot {
     @Override
     public void deal(Hid hid, Card card, int[] values) {
         if (Seat.DEALER == hid.getSeat()) {
+            new Hand(hid);
             if (card != null) {
                 upCard = new Card(card);
             }
@@ -75,26 +76,32 @@ public class MyBot implements Runnable, IBot {
 
     @Override
     public void bust(Hid hid) {
+        System.out.println("BUST FOR " + hid.getSeat());
     }
 
     @Override
     public void win(Hid hid) {
+        System.out.println("WIN FOR " + hid.getSeat());
     }
 
     @Override
     public void blackjack(Hid hid) {
+        System.out.println("B-J FOR " + hid.getSeat());
     }
 
     @Override
     public void charlie(Hid hid) {
+        System.out.println("CHARLIE FOR " + hid.getSeat());
     }
 
     @Override
     public void lose(Hid hid) {
+        System.out.println("LOSE FOR " + hid.getSeat());
     }
 
     @Override
     public void push(Hid hid) {
+        System.out.println("PUSH FOR " + hid.getSeat());
     }
 
     @Override
@@ -112,31 +119,46 @@ public class MyBot implements Runnable, IBot {
 
     @Override
     public void run() {
-
-        synchronized (dealer) {
+        System.out.println("INSIDE RUN FOR " + hid.getSeat());
+        synchronized (this.dealer) {
 
             Responder r = new Responder(this.hand, this.upCard, this.dealer);
 
-            Play bs = r.get_advice();
+            Play play = r.get_advice();
 
-            while (bs != Play.STAY) {
+            while (play != Play.STAY) {
 
-                if (bs == Play.DOUBLE_DOWN && hand.size() == 2) {
-                    dealer.doubleDown(this, this.hid);
-                }
-                if (bs == Play.HIT) {
-                    dealer.hit(this, this.hid);
-                }
-                if (bs == Play.SPLIT) {
-                    dealer.hit(this, this.hid);
-                }
-                if (bs == Play.DOUBLE_DOWN && hand.size() != 2) {
-                    dealer.hit(this, this.hid);
-                }
-                if (bs == Play.STAY) {
+                if (hand.getValue() > 21) {
+                    return;
+                } else if (hand.getValue() >= 17 && hand.getValue() <= 21) {
+                    //I know to stay here, but wanna sleep 
+                    //so it looks like I had to think to stay.
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(MyBot.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     dealer.stay(this, hid);
+                    System.out.println("I CHOSE TO STAY");
+                    break;
+                }
+                if (play == Play.DOUBLE_DOWN && hand.size() == 2) {
+                    dealer.doubleDown(this, this.hid);
+                    break;
                 }
 
+                if (play == Play.DOUBLE_DOWN && hand.size() != 2) {
+                    dealer.stay(this, this.hid);
+                    break;
+                }
+
+                if (play == Play.HIT) {
+                    dealer.hit(this, this.hid);
+                    if (hand.getValue() > 21) {
+                        System.out.println("I HIT, SO I BUST");
+                       return;
+                    }
+                }
                 try {
                     Random random1 = new Random();
                     int r1 = random1.nextInt(4000);
@@ -148,14 +170,30 @@ public class MyBot implements Runnable, IBot {
                     Logger.getLogger(MyBot.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
-                bs = r.get_advice();
+                play = r.get_advice();
 
             }
-            if (this.hand.getValue() > 21) {
-                endGame(shoeSize);
-            } else {
+
+            if (play == Play.STAY) {
                 dealer.stay(this, hid);
+                return;
             }
+
+            if (hand.getValue() > 21 || play != Play.STAY) {
+                return;
+            }
+            
+            
+            if (play != Play.DOUBLE_DOWN && play != Play.STAY) {
+                if (hand.getValue() > 21) {
+                    endGame(shoeSize);
+                    return;
+                } else {
+                    dealer.stay(this, hid);
+                    return;
+                }
+            }
+
         }
     }
 
@@ -165,24 +203,28 @@ public class MyBot implements Runnable, IBot {
     private class Responder implements Runnable {
 
         private Dealer dealer;
-        private Hand hand;
+        private Hand bsHand;
         private Card upcard;
         private Play advice;
 
         public Responder(Hand myhand, Card upcard, Dealer d) {
-            this.hand = myhand;
+            this.bsHand = myhand;
             this.upcard = upcard;
             this.dealer = d;
         }
 
         public Play get_advice() {
+            System.out.println("INSIDE ADVICE FOR " + hid.getSeat());
+            System.out.println("HAND VALUE " + bsHand.getValue());
             Thread t1 = new Thread(this);
             t1.start();
+            System.out.println("POSSIBLE ADVICE " + advice);
             return advice;
         }
 
         @Override
         public void run() {
+
             BasicStrategy b = new BasicStrategy();
             try {
                 Random random2 = new Random();
@@ -195,6 +237,7 @@ public class MyBot implements Runnable, IBot {
                 Logger.getLogger(MyBot.class.getName()).log(Level.SEVERE, null, ex);
             }
             advice = b.advise(hand, upcard);
+
         }
 
     }
