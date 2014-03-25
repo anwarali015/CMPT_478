@@ -126,37 +126,36 @@ public class MyBot implements Runnable, IBot {
 
             Play play = r.get_advice();
 
+            //I added RETURN statements just to make sure
+            //that i exit this methos, otherwise it servess
+            // no puropse!
             while (play != Play.STAY) {
 
-                if (hand.getValue() > 21) {
-                    return;
-                } else if (hand.getValue() >= 17 && hand.getValue() <= 21) {
-                    //I know to stay here, but wanna sleep 
-                    //so it looks like I had to think to stay.
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(MyBot.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                //For some reason my basic strategy returns a Hit
+                //so this takes care of it.
+                if (hand.size() != 2 && hand.getValue() >= 17) {
                     dealer.stay(this, hid);
-                    System.out.println("I CHOSE TO STAY");
-                    break;
-                }
-                if (play == Play.DOUBLE_DOWN && hand.size() == 2) {
-                    dealer.doubleDown(this, this.hid);
-                    break;
+                    return;
                 }
 
-                if (play == Play.DOUBLE_DOWN && hand.size() != 2) {
-                    dealer.stay(this, this.hid);
-                    break;
+                if (hand.getValue() >= 21) {
+                    return;
+                }
+
+                if (play == Play.DOUBLE_DOWN) {
+                    dealer.doubleDown(this, hid);
+
+                    if (hand.getValue() > 21) {
+                        System.out.println("I D_D, SO I BUST");
+                    }
+                    return;
                 }
 
                 if (play == Play.HIT) {
-                    dealer.hit(this, this.hid);
-                    if (hand.getValue() > 21) {
-                        System.out.println("I HIT, SO I BUST");
-                       return;
+                    dealer.hit(this, hid);
+                    if (hand.getValue() >= 21) {
+                        System.out.println("I HIT, SO I MIGHT BUST");
+                        return;
                     }
                 }
                 try {
@@ -177,21 +176,6 @@ public class MyBot implements Runnable, IBot {
             if (play == Play.STAY) {
                 dealer.stay(this, hid);
                 return;
-            }
-
-            if (hand.getValue() > 21 || play != Play.STAY) {
-                return;
-            }
-            
-            
-            if (play != Play.DOUBLE_DOWN && play != Play.STAY) {
-                if (hand.getValue() > 21) {
-                    endGame(shoeSize);
-                    return;
-                } else {
-                    dealer.stay(this, hid);
-                    return;
-                }
             }
 
         }
@@ -215,7 +199,7 @@ public class MyBot implements Runnable, IBot {
 
         public Play get_advice() {
             System.out.println("INSIDE ADVICE FOR " + hid.getSeat());
-            System.out.println("HAND VALUE " + bsHand.getValue());
+            System.out.println("HAND VALUE " + bsHand.getValue() + " UPCARD " + upcard.value());
             Thread t1 = new Thread(this);
             t1.start();
             System.out.println("POSSIBLE ADVICE " + advice);
@@ -232,14 +216,22 @@ public class MyBot implements Runnable, IBot {
                 while (r2 < 2000) {
                     r2 = random2.nextInt(4000);
                 }
+
                 Thread.sleep(r2);
             } catch (InterruptedException ex) {
                 Logger.getLogger(MyBot.class.getName()).log(Level.SEVERE, null, ex);
             }
             advice = b.advise(hand, upcard);
 
+            //if advice is a split we might want to 
+            //return its number value.
+            if (advice == Play.SPLIT) {
+                System.out.print("ADVISE CHANGED FROM " + advice + " TO\n");
+                advice = b.flip_split(hand, upcard);
+                System.out.print(advice + " ON HAND " + hand.getValue() + " AND UP-CARD " + upcard.value() + "\n");
+            }
+
         }
 
     }
-
 }
