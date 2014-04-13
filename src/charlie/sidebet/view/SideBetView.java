@@ -2,13 +2,19 @@ package charlie.sidebet.view;
 
 import charlie.audio.Effect;
 import charlie.audio.SoundFactory;
+import charlie.card.Hand;
 import charlie.card.Hid;
 import charlie.plugin.ISideBetView;
+import charlie.view.AHandsManager;
 import charlie.view.AMoneyManager;
+import static charlie.view.AMoneyManager.STAKE_HOME_X;
+import static charlie.view.AMoneyManager.STAKE_HOME_Y;
+import charlie.view.sprite.AtStakeSprite;
 import charlie.view.sprite.Chip;
 import charlie.view.sprite.ChipButton;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -56,10 +62,14 @@ public class SideBetView implements ISideBetView {
     protected final String exactly13 = "Exactly 13    pays  10:1";
     protected final String royalMatch = "Royal Match pays  25:1";
     protected Image img;
+    
+    Hand hand;
+    boolean gameOver;
+    boolean gameStart = false;
 
     public SideBetView() {
         //LOG.info("side bet view constructed");
-
+        gameStart = true;
     }
 
     /**
@@ -121,14 +131,19 @@ public class SideBetView implements ISideBetView {
     @Override
     public void ending(Hid hid) {
         double bet = hid.getSideAmt();
-        
+
         if (bet == 0) {
             return;
         }
+        gameOver = true;
         //LOG.info("side bet outcome = "+bet);
         // Update the bankroll
+        hand = new Hand(hid);
+        System.out.println("GAME OVER");
+        System.out.println("HAND VALUE: " + hand.getValue());
         moneyManager.increase(bet);
         // LOG.info("new bankroll = "+moneyManager.getBankroll());
+
     }
 
     /**
@@ -136,6 +151,7 @@ public class SideBetView implements ISideBetView {
      */
     @Override
     public void starting() {
+
     }
 
     /**
@@ -172,10 +188,11 @@ public class SideBetView implements ISideBetView {
         g.setColor(Color.YELLOW);
         g.setFont(ruleFont);
 
+        //Draw the text
         g.drawString(super7, X + 33, Y - 12);
         g.drawString(exactly13, X + 33, Y);
         g.drawString(royalMatch, X + 33, Y + 12);
-        
+
         // Draw the at-stake amount
         FontMetrics fm = g.getFontMetrics(font);
         String text = "" + amt;
@@ -187,49 +204,47 @@ public class SideBetView implements ISideBetView {
         for (Chip chip : chips) {
             chip.render(g);
         }
-        
-        // Draw the Result
-        //Font result = new Font("Ariel",Font.BOLD,100);
-        //g.setBackground(Color.RED);
-        //g.setColor(Color.white);
-        //g.setFont(ruleFont);
-        //g.drawString("WIN", X+66, Y-12);
-        
+
+        // This is just for testing!
+        if (gameOver) {
+            draw_win("WIN!", g);
+        }
+
     }
-    
+
     /**
-     * Renders the WIN text on the table
-     *  
+     * Renders the Loose text on the table
+     *
      * @param name, the text to render
-     * @param g 
+     * @param g
      */
-    private void draw_lose(String name, Graphics2D g){
+    private void draw_lose(String name, Graphics2D g) {
         Font result = new Font("Ariel", Font.BOLD, 20);
         g.setFont(result);
         g.setColor(Color.RED);
-         g.fillRect(X + 60, Y - 20, 60, 25); 
+        //g.fillRoundRect(X + 60, Y - 20, 60, 25,15,15);
+        g.drawRect(X + 60, Y - 20, 45, 25);
+        g.fillRect(X + 60, Y - 20, 60, 25);
         g.setColor(Color.WHITE);
         g.drawString(name, X + 60, Y);
     }
 
     /**
      * Renders the WIN text on the table
-     *  
+     *
      * @param name, the text to render
-     * @param g 
+     * @param g
      */
     private void draw_win(String name, Graphics2D g) {
 
         Font result = new Font("Ariel", Font.BOLD, 20);
         g.setFont(result);
-        g.setColor(Color.GRAY);
-        // g.drawRect(X+66,Y-12,50,30);
-        // g.drawString(name, X + 70, Y + 2);
-        // g.drawRect(X+70, Y-3, 50, 30);
-        g.fillRect(X + 60, Y - 20, 45, 25); 
+        g.setColor(Color.GREEN);
+        //g.fillRoundRect(X + 60, Y - 20, 45, 25,15,15);
+        g.fillRect(X + 60, Y - 20, 45, 25);
         g.setColor(Color.BLACK);
-        g.drawString(name, X + 60, Y);
-        
+        g.drawString(name, X + 62, Y);
+
     }
 
     private boolean inRange(int x, int y) {
