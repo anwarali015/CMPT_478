@@ -53,18 +53,18 @@ public class SideBetRule implements ISideBetRule {
 
         Double bet = hand.getHid().getSideAmt();
         //   LOG.info("side bet amount = "+bet);
-
+        
         if (bet == 0) {
             return 0.0;
         }
-
-        Double sidePayoff = getHighestPayout(hand);
-        // LOG.info("side bet rule applying hand = "+hand);
-
+        
+        double sidePayoff = getHighestPayout(hand);
+         //LOG.info("side bet rule applying hand = "+hand);
+        
         if (sidePayoff > 0) {
             return sidePayoff * bet;
         }
-
+        
         return -bet;
     }
 
@@ -74,33 +74,33 @@ public class SideBetRule implements ISideBetRule {
      * @param hand
      * @return
      */
-    public double getHighestPayout(Hand hand) {
+    private double getHighestPayout(Hand hand) {
 
         double sideBet = 0;
-        System.out.println("GETTING HIGHEST PAY");
-        if (is_super7(hand) && is_exactly13(hand)) {
-            //   LOG.info("side bet SUPER 7 matches");
+
+        if (is_exactly13(hand)) {
+            sideBet = EXACTLY_13;
+        } else if (is_exactly13(hand) && is_super7(hand)) {
             sideBet = EXACTLY_13;
         } else if (is_super7(hand)) {
             sideBet = PAYOFF_SUPER7;
-        } else if (is_exactly13(hand)) {
-            sideBet = EXACTLY_13;
         } else if (is_royalMatch(hand)) {
             sideBet = ROYAL_MATCH;
         } else {
             sideBet = 0;
         }
-        System.out.println(hand.getHid().getSideAmt() * sideBet);
+
+        //   LOG.info("side bet SUPER 7 matches");
         return sideBet;
     }
 
     /**
-     * Determines if the hand is a super 7
+     * Determines if the hand's first card is a 7.
      *
      * @param hand
      * @return
      */
-    private  boolean is_super7(Hand hand) {
+    public boolean is_super7(Hand hand) {
         return hand.getCard(0).getRank() == 7;
     }
 
@@ -110,16 +110,17 @@ public class SideBetRule implements ISideBetRule {
      * @param hand
      * @return
      */
-    private  boolean is_royalMatch(Hand hand) {
+    private boolean is_royalMatch(Hand hand) {
 
         boolean royal = false;
 
         Suit s1 = hand.getCard(0).getSuit();
         Suit s2 = hand.getCard(1).getSuit();
-        int c1 = hand.getCard(0).getRank();
-        int c2 = hand.getCard(1).getRank();
 
-        if (c1 == Card.KING && c2 == Card.QUEEN) {
+        int card_1 = hand.getCard(0).getRank();
+        int card_2 = hand.getCard(1).getRank();
+
+        if ((card_1 == Card.KING && card_2 == Card.QUEEN) || (card_2 == Card.KING && card_1 == Card.QUEEN)) {
             if (s1 == s2) {
                 royal = true;
             }
@@ -128,13 +129,16 @@ public class SideBetRule implements ISideBetRule {
     }
 
     /**
-     * Determines if the hand value is 13
+     * Determines if the hand value is 13 (first 2 cards)
      *
      * @param hand
      * @return
      */
-    private  boolean is_exactly13(Hand hand) {
-        return (hand.getValue() == 13);
+    private boolean is_exactly13(Hand hand) {
+        int card_1 = hand.getCard(0).getRank();
+        int card_2 = hand.getCard(1).getRank();
+        
+        return (card_1 + card_2 == 13);
     }
 
 }
