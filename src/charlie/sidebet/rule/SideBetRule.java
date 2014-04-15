@@ -77,7 +77,6 @@ public class SideBetRule implements ISideBetRule {
     private double getHighestPayout(Hand hand) {
 
         double sideBet = 0;
-
         if (is_exactly13(hand)) {
             sideBet = EXACTLY_13;
         } else if (is_exactly13(hand) && is_super7(hand)) {
@@ -89,7 +88,8 @@ public class SideBetRule implements ISideBetRule {
         } else {
             sideBet = 0;
         }
-
+      
+        System.out.println("GETTING HIGHEST PAY: "+sideBet);
         //   LOG.info("side bet SUPER 7 matches");
         return sideBet;
     }
@@ -101,7 +101,7 @@ public class SideBetRule implements ISideBetRule {
      * @return
      */
     public boolean is_super7(Hand hand) {
-        return hand.getCard(0).getRank() == 7;
+        return hand.getCard(0).value() == 7;
     }
 
     /**
@@ -121,7 +121,7 @@ public class SideBetRule implements ISideBetRule {
         int card_2 = hand.getCard(1).getRank();
 
         if ((card_1 == Card.KING && card_2 == Card.QUEEN) || (card_2 == Card.KING && card_1 == Card.QUEEN)) {
-            if (s1 == s2) {
+            if (s1 == s2 || s2 == s1) {
                 royal = true;
             }
         }
@@ -135,8 +135,8 @@ public class SideBetRule implements ISideBetRule {
      * @return
      */
     private boolean is_exactly13(Hand hand) {
-        int card_1 = hand.getCard(0).getRank();
-        int card_2 = hand.getCard(1).getRank();
+        int card_1 = hand.getCard(0).value();
+        int card_2 = hand.getCard(1).value();
         
         return (card_1 + card_2 == 13);
     }
