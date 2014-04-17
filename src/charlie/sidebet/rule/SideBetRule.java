@@ -39,7 +39,7 @@ public class SideBetRule implements ISideBetRule {
 
     private static final Double PAYOFF_SUPER7 = 3.0;
     private static final Double ROYAL_MATCH = 25.0;
-    private static final Double EXACTLY_13 = 10.0;
+    private static final Double EXACTLY_13 = 1.0;
 
     /**
      * Apply rule to the hand and return the payout if the rule matches and the
@@ -77,19 +77,19 @@ public class SideBetRule implements ISideBetRule {
     private double getHighestPayout(Hand hand) {
 
         double sideBet = 0;
-        if (is_exactly13(hand)) {
-            sideBet = EXACTLY_13;
-        } else if (is_exactly13(hand) && is_super7(hand)) {
-            sideBet = EXACTLY_13;
-        } else if (is_super7(hand)) {
+        if (is_super7(hand)) {
             sideBet = PAYOFF_SUPER7;
+        } else if (is_exactly13(hand) && is_super7(hand)) {
+            sideBet = PAYOFF_SUPER7;
+        } else if (is_exactly13(hand)) {
+            sideBet = EXACTLY_13;
         } else if (is_royalMatch(hand)) {
             sideBet = ROYAL_MATCH;
         } else {
             sideBet = 0;
         }
       
-        System.out.println("GETTING HIGHEST PAY: "+sideBet);
+        
         //   LOG.info("side bet SUPER 7 matches");
         return sideBet;
     }
